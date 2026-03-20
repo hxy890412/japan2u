@@ -3,99 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>訂單查詢 | Butterfly Ink</title>
+    <title>訂單查詢 | 2U日本代購 🦋</title>
+    <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
-        <link rel="stylesheet" href="style.css">
-
-    <style>
-        :root { --primary-blue: #455a64; --success-green: #2e7d32; --pending-orange: #ef6c00; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: #f0f2f5; margin: 0; padding: 0px; }
-        .container { max-width: 500px; margin: 40px auto; }
-        
-        
-    </style>
 </head>
 <body>
-<nav class="top-nav">
-    <a href="index.html" class="nav-logo">🦋 2u 日本代購</a>
-</nav>
-<div class="container">
-    <div class="search-section">
-        <h2 style="margin-top:0">🔍 訂單進度查詢</h2>
-        <input type="text" id="searchName" placeholder="輸入您的社群名稱">
-        <button class="btn-search" onclick="doSearch()">立即查詢</button>
+    <nav class="top-nav">
+        <a href="index.html" class="nav-logo">🦋 2U 日本代購</a>
+    </nav>
+
+    <div class="page-container">
+        <div class="search-section" style="background:white; padding:20px; border-radius:15px; margin-bottom:20px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <h2 style="margin-top:0; color:#333;">訂單進度查詢</h2>
+            <div id="user-welcome" style="margin-bottom:15px; font-size:14px; color:#666;"></div>
+            <input type="text" id="searchName" placeholder="輸入社群名稱搜尋" style="width:70%; padding:12px; border:1px solid #ddd; border-radius:8px;">
+            <button onclick="doSearch()" class="btn-search" style="padding:12px 20px; background:var(--primary-red); color:white; border:none; border-radius:8px; cursor:pointer; margin-left:5px;">搜尋</button>
+        </div>
+
+        <div class="summary-grid" id="summary-area" style="display:none;">
+            <div class="sum-box">
+                <span class="sum-label">訂單總額</span>
+                <span class="sum-val" id="sum-total">$0</span>
+            </div>
+            <div class="sum-box">
+                <span class="sum-label">已匯款</span>
+                <span class="sum-val" id="sum-paid" style="color:#4caf50;">$0</span>
+            </div>
+            <div class="sum-box">
+                <span class="sum-label">未匯款</span>
+                <span class="sum-val" id="sum-unpaid" style="color:var(--primary-red);">$0</span>
+            </div>
+        </div>
+
+        <div id="loading" style="display:none; text-align:center; padding:20px;">讀取中...</div>
+        <div id="result-list">
+            </div>
     </div>
 
-    <div id="loading">讀取中，請稍候...</div>
-    <div id="result-list">
-        </div>
-</div>
+    <script>
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQPqpF3suCYPcNNh_Z5vTzqTvWRJCTfCJj-WP1bJs9r2dogVwZ33AcFW_IhzTszes_/exec'; // ⬅️ 記得填入你的 GAS 網址
 
-<script>
-    // ⚠️ 記得換成你的 GAS 網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbwo3QdUYTQPMs9FNy0dtbMWAPlvPYGlQKNf5Fynl_4i_H4v82QVQ6J34PYPOLgW49zA/exec"; 
+        window.onload = function() {
+            // 1. 自動從 localStorage 讀取上次搜尋的名稱
+            const savedName = localStorage.getItem('socialName');
+            if (savedName) {
+                document.getElementById('searchName').value = savedName;
+                doSearch();
+            }
+        };
 
-    // 1. 網頁開啟時，檢查網址參數 (?name=XXX)
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const nameParam = urlParams.get('name');
-        
-        if (nameParam) {
-            document.getElementById('searchName').value = nameParam;
-            doSearch(); // 有名字就直接查
-        }
-    };
+        async function doSearch() {
+            const name = document.getElementById('searchName').value.trim();
+            if (!name) return alert("請輸入名稱");
 
-    // 2. 執行查詢
-    async function doSearch() {
-        const name = document.getElementById('searchName').value.trim();
-        if (!name) return alert("請輸入名字再查詢喔！");
+            // 記住名稱，下次打開自動填寫
+            localStorage.setItem('socialName', name);
 
-        const loading = document.getElementById('loading');
-        const list = document.getElementById('result-list');
-        
-        loading.style.display = "block";
-        list.innerHTML = "";
+            const list = document.getElementById('result-list');
+            const loading = document.getElementById('loading');
+            const summary = document.getElementById('summary-area');
 
-        try {
-            const response = await fetch(`${GAS_URL}?searchKey=${encodeURIComponent(name)}`);
-            const data = await response.json();
-            renderResults(data);
-        } catch (e) {
-            list.innerHTML = "<p style='text-align:center; color:red;'>查詢出錯，請確認網路或名字是否正確。</p>";
-        } finally {
-            loading.style.display = "none";
-        }
-    }
+            list.innerHTML = "";
+            loading.style.display = "block";
+            summary.style.display = "none";
 
-    // 3. 渲染結果到網頁上
-    function renderResults(orders) {
-        const list = document.getElementById('result-list');
-        if (orders.length === 0) {
-            list.innerHTML = "<p style='text-align:center;'>查無訂單資料，請確認名字是否輸入正確。</p>";
-            return;
+            try {
+                const response = await fetch(`${GAS_URL}?searchKey=${encodeURIComponent(name)}`);
+                const orders = await response.json();
+                renderResults(orders);
+            } catch (e) {
+                list.innerHTML = "<p style='text-align:center; color:red;'>查詢失敗，請稍後再試。</p>";
+            } finally {
+                loading.style.display = "none";
+            }
         }
 
-        // 把最新的訂單排在最上面
-        orders.reverse().forEach(order => {
-            const statusClass = order.isPaid ? 'status-paid' : 'status-unpaid';
-            const cardClass = order.isPaid ? 'paid' : 'unpaid';
-            const statusText = order.isPaid ? '✅ 已匯款 / 對帳完成' : '⏳ 待對帳 / 尚未匯款';
+        function renderResults(orders) {
+            const list = document.getElementById('result-list');
+            const summary = document.getElementById('summary-area');
+            
+            if (!orders || orders.length === 0) {
+                list.innerHTML = "<p style='text-align:center; padding:40px; color:#888;'>查無訂單資料 🦋</p>";
+                return;
+            }
 
-            list.innerHTML += `
-                <div class="order-card ${cardClass}">
-                    <div class="order-info">
-                        <div style="font-weight:bold; font-size:16px;">${order.item}</div>
-                        <div style="font-weight:bold;">$${order.price}</div>
+            summary.style.display = "grid";
+
+            let totalAll = 0;
+            let totalPaid = 0;
+            let totalUnpaid = 0;
+
+            // 將訂單依據編號倒序排列（最新在前）
+            orders.sort((a, b) => b.id.localeCompare(a.id)).forEach(order => {
+                const isPaid = order.isPaid;
+                const sectionClass = isPaid ? 'paid-section' : 'unpaid-section';
+                
+                // 計算統計數據
+                totalAll += order.total;
+                if (isPaid) totalPaid += order.total;
+                else totalUnpaid += order.total;
+
+                // 生成商品表格內容
+                let itemsHtml = order.items.map(item => `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td style="text-align:center;">${item.qty}</td>
+                        <td style="text-align:right;">$${item.sub}</td>
+                    </tr>
+                `).join('');
+
+                list.innerHTML += `
+                    <div class="order-group-card ${sectionClass}">
+                        <div class="order-header" style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.05);">
+                            <div>
+                                <strong style="font-size:14px;">編號：${order.id}</strong>
+                                <div style="font-size:12px; color:#888;">備註：${order.note || '無'}</div>
+                            </div>
+                            <span style="font-size:13px; font-weight:bold; color:${isPaid ? '#2e7d32':'#d32f2f'};">
+                                ${isPaid ? '✅ 已完成對帳' : '⏳ 尚未匯款'}
+                            </span>
+                        </div>
+                        <table class="order-table">
+                            <thead>
+                                <tr style="background:rgba(0,0,0,0.02);">
+                                    <th style="text-align:left;">商品名稱</th>
+                                    <th>數量</th>
+                                    <th style="text-align:right;">小計</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${itemsHtml}
+                            </tbody>
+                        </table>
+                        <div style="padding:12px 15px; text-align:right; font-weight:bold; background:rgba(255,255,255,0.5);">
+                            <span style="font-size:12px; color:#666; margin-right:10px;">訂單總額</span>
+                            <span style="font-size:18px; color:var(--primary-red);">$${order.total}</span>
+                        </div>
                     </div>
-                    <div style="font-size:14px; color:#666; margin-top:5px;">數量：${order.qty}</div>
-                    <div class="status-badge ${statusClass}">${statusText}</div>
-                    <div class="order-id">訂單編號：${order.id}</div>
-                </div>
-            `;
-        });
-    }
-</script>
+                `;
+            });
 
+            // 更新上方統計區塊文字
+            document.getElementById('sum-total').innerText = `$${totalAll}`;
+            document.getElementById('sum-paid').innerText = `$${totalPaid}`;
+            document.getElementById('sum-unpaid').innerText = `$${totalUnpaid}`;
+        }
+    </script>
 </body>
 </html>
