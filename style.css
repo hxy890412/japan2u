@@ -1,29 +1,30 @@
-/* --- 全域設定 --- */
+/* --- 全域設定與精緻化變數 --- */
 :root {
-    --primary-red: #d32f2f;
-    --dark-blue: #263238;
-    --bg-color: #f8f9fa;
-    --paid-green: #e8f5e9;    /* 已匯款淺綠色 */
-    --unpaid-red: #fff5f5;    /* 未匯款淺紅色 */
+    --primary-red: #e53935;
+    --dark-blue: #2c3e50;
+    --bg-color: #f4f7f6;
+    --card-shadow: 0 8px 20px rgba(0,0,0,0.06);
+    --paid-green: #e8f5e9;
+    --unpaid-red: #ffebee;
     --status-green: #2e7d32;
-    --status-red: #c62828;
+    --status-red: #d32f2f;
 }
 
 body {
-    font-family: 'Noto Sans TC', sans-serif;
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
     margin: 0;
-    padding: 0;
     background-color: var(--bg-color);
     color: var(--dark-blue);
-    line-height: 1.6;
+    -webkit-tap-highlight-color: transparent; /* 移除手機點擊藍框 */
 }
 
 /* --- 頂部導覽列 --- */
 .top-nav {
-    background: white;
-    padding: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 18px;
     text-align: center;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.04);
     position: sticky;
     top: 0;
     z-index: 1000;
@@ -32,200 +33,186 @@ body {
 .nav-logo {
     text-decoration: none;
     color: var(--dark-blue);
-    font-weight: bold;
-    font-size: 1.2rem;
+    font-weight: 700;
+    font-size: 1.3rem;
+    letter-spacing: 1px;
 }
 
-/* --- 容器佈局 --- */
-.page-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-}
-
-/* --- 商品分類切換 (Category Bar) --- */
+/* --- 商品分類切換 (捲軸優化) --- */
 .category-bar {
     display: flex;
-    gap: 10px;
+    gap: 12px;
     overflow-x: auto;
-    padding: 10px 0;
-    margin-bottom: 20px;
-    scrollbar-width: none; /* 隱藏捲軸 */
+    padding: 15px 5px;
+    margin-bottom: 10px;
 }
 
 .category-bar::-webkit-scrollbar { display: none; }
 
 .cat-btn {
-    padding: 8px 18px;
-    border-radius: 20px;
-    border: 1px solid #ddd;
+    padding: 10px 22px;
+    border-radius: 25px;
+    border: none;
     background: white;
+    color: #666;
     white-space: nowrap;
     cursor: pointer;
     font-size: 14px;
-    transition: 0.3s;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.03);
+    transition: all 0.2s ease;
 }
 
 .cat-btn.active {
     background: var(--primary-red);
     color: white;
-    border-color: var(--primary-red);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(229, 57, 53, 0.3);
 }
 
-/* --- 商品卡片 (Product Card) --- */
+/* --- 商品卡片 (Grid 優化) --- */
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr); /* 手機版一排兩個 */
+    gap: 12px;
 }
 
 .product-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
     position: relative;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: transform 0.2s;
+    box-shadow: var(--card-shadow);
 }
+
+.product-card:active { transform: scale(0.97); }
 
 .product-img {
     width: 100%;
     aspect-ratio: 1/1;
     object-fit: cover;
+    background: #eee;
 }
 
 .badge {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    background: var(--primary-red);
+    top: 12px;
+    left: 12px;
+    background: rgba(229, 57, 53, 0.9);
     color: white;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 8px;
+    font-size: 10px;
     font-weight: bold;
+    backdrop-filter: blur(4px);
 }
 
-.product-info {
-    padding: 12px;
-}
+.product-info { padding: 12px; }
 
 .product-name {
-    font-weight: 500;
-    font-size: 14px;
-    margin-bottom: 5px;
+    font-weight: 600;
+    font-size: 15px;
+    height: 42px; /* 固定高度防止排版歪掉 */
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .product-price {
     color: var(--primary-red);
-    font-weight: bold;
-    margin-bottom: 10px;
+    font-weight: 800;
+    font-size: 1.1rem;
+    margin: 8px 0;
 }
 
 /* --- 數量控制鈕 --- */
 .qty-controls {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    background: #f1f1f1;
-    border-radius: 8px;
-    padding: 2px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    padding: 4px;
 }
 
 .qty-controls button {
-    width: 30px;
-    height: 30px;
+    flex: 1;
+    height: 32px;
     border: none;
     background: white;
-    border-radius: 6px;
-    cursor: pointer;
+    border-radius: 10px;
     font-weight: bold;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-/* --- 查詢統計區塊 (Summary) --- */
+.qty-controls span { flex: 1; text-align: center; font-weight: 600; }
+
+/* --- 查詢頁統計區 --- */
 .summary-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
+    gap: 12px;
     margin-bottom: 25px;
 }
 
 .sum-box {
     background: white;
-    padding: 15px 10px;
-    border-radius: 12px;
+    padding: 15px 5px;
+    border-radius: 18px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    box-shadow: var(--card-shadow);
 }
 
-.sum-label { font-size: 11px; color: #888; display: block; }
-.sum-val { font-size: 16px; font-weight: bold; margin-top: 5px; }
+.sum-label { font-size: 11px; color: #8e8e93; font-weight: 500; }
+.sum-val { font-size: 16px; font-weight: 700; display: block; margin-top: 4px; }
 
-/* --- 訂單分區卡片 (Order Group Card) --- */
+/* --- 訂單卡片分區 --- */
 .order-group-card {
     background: white;
-    border-radius: 16px;
+    border-radius: 24px;
     margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    border: 1px solid rgba(0,0,0,0.03);
+    box-shadow: var(--card-shadow);
 }
 
-/* 分區顏色 */
-.unpaid-section { background-color: var(--unpaid-red); border-left: 6px solid #ef5350; }
-.paid-section { background-color: var(--paid-green); border-left: 6px solid #66bb6a; }
+.unpaid-section { border-top: 6px solid var(--status-red); }
+.paid-section { border-top: 6px solid var(--status-green); }
 
-/* 表格化內容 */
-.order-table {
-    width: 100%;
-    border-collapse: collapse;
-}
+.order-table { width: 100%; border-collapse: collapse; }
+.order-table td { padding: 14px; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
 
-.order-table th {
-    font-size: 12px;
-    color: #777;
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
-}
-
-.order-table td {
-    padding: 12px 15px;
-    font-size: 14px;
-}
-
-/* --- 底部按鈕 (Footer Button) --- */
+/* --- 底部按鈕 --- */
 .footer-btn {
     position: fixed;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 25px;
+    left: 5%;
     width: 90%;
-    max-width: 400px;
     background: var(--dark-blue);
     color: white;
-    padding: 16px;
-    border-radius: 12px;
+    padding: 18px;
+    border-radius: 20px;
     border: none;
     font-size: 16px;
-    font-weight: bold;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.2);
-    cursor: pointer;
-    z-index: 900;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(44, 62, 80, 0.3);
+    z-index: 1001;
 }
 
-/* 首頁專用佈局 */
+/* --- 首頁 --- */
 .home-body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
+    height: 100vh;
 }
 
 .home-container {
-    text-align: center;
     background: white;
-    padding: 40px 20px;
-    border-radius: 24px;
+    padding: 50px 30px;
+    border-radius: 35px;
     width: 85%;
-    max-width: 350px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    max-width: 380px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
 }
