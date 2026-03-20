@@ -5,33 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>訂單查詢 | Butterfly Ink</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css">
+
     <style>
         :root { --primary-blue: #455a64; --success-green: #2e7d32; --pending-orange: #ef6c00; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 500px; margin: 0 auto; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: #f0f2f5; margin: 0; padding: 0px; }
+        .container { max-width: 500px; margin: 40px auto; }
         
-        /* 搜尋框區 */
-        .search-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
-        input[type="text"] { width: 80%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 16px; }
-        .btn-search { padding: 12px 20px; background: var(--primary-blue); color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; width: 80%; font-weight: bold; }
-
-        /* 訂單卡片樣式 */
-        .order-card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; border-left: 6px solid #ccc; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .order-card.paid { border-left-color: var(--success-green); }
-        .order-card.unpaid { border-left-color: var(--pending-orange); }
-
-        .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; margin-top: 8px; }
-        .status-paid { background: #e8f5e9; color: var(--success-green); }
-        .status-unpaid { background: #fff3e0; color: var(--pending-orange); }
         
-        .order-info { display: flex; justify-content: space-between; align-items: center; }
-        .order-id { font-size: 11px; color: #999; margin-top: 10px; }
-        
-        #loading { text-align: center; color: #666; display: none; }
     </style>
 </head>
 <body>
-
+<nav class="top-nav">
+    <a href="index.html" class="nav-logo">🦋 2u 日本代購</a>
+</nav>
 <div class="container">
     <div class="search-section">
         <h2 style="margin-top:0">🔍 訂單進度查詢</h2>
@@ -46,7 +33,7 @@
 
 <script>
     // ⚠️ 記得換成你的 GAS 網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzZk4sQWZUTJIYC5AqgcyUy32Bsfgv_k8dQkHH2_rT8qWt3jh6Fz61Eg07Kau62VXi8/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwo3QdUYTQPMs9FNy0dtbMWAPlvPYGlQKNf5Fynl_4i_H4v82QVQ6J34PYPOLgW49zA/exec"; 
 
     // 1. 網頁開啟時，檢查網址參數 (?name=XXX)
     window.onload = function() {

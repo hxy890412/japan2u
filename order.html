@@ -4,38 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>日本代購 | 填寫訂單</title>
+    <link rel="stylesheet" href="style.css">
+
     <style>
-        :root { --primary-red: #d32f2f; --gray-bg: #f8f9fa; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-bg); margin: 0; padding: 20px; color: #333; }
-        .container { max-width: 800px; margin: 0 auto; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--gray-bg); margin: 0; padding: 0px; color: #333; }
+        .container { max-width: 800px; margin: 40px auto; }
         
-        /* 頂部基本資料區 */
-        .form-section { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; }
-        input[type="text"] { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-
-        /* 商品網格佈局 */
-        .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 20px; }
-        .product-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); transition: 0.3s; position: relative; }
-        .product-card:hover { transform: translateY(-5px); }
-        
-        /* 商品圖 */
-        .product-img { width: 100%; height: 150px; object-fit: cover; background: #eee; }
-        .product-info { padding: 12px; text-align: center; }
-        .product-name { font-weight: bold; font-size: 15px; margin-bottom: 5px; min-height: 40px; }
-        .product-price { color: var(--primary-red); font-weight: 700; margin-bottom: 10px; }
-        
-        /* 標籤 (限量/盲抽) */
-        .badge { position: absolute; top: 10px; left: 10px; background: rgba(211, 47, 47, 0.85); color: white; padding: 4px 8px; border-radius: 5px; font-size: 11px; }
-        
-        /* 數量控制 */
-        .qty-controls { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
-        .qty-input { width: 45px; text-align: center; border: 1px solid #ddd; border-radius: 5px; padding: 5px; }
-
-        .footer-btn { position: sticky; bottom: 20px; background: var(--primary-red); color: white; border: none; width: 100%; padding: 18px; border-radius: 50px; font-size: 18px; font-weight: bold; box-shadow: 0 10px 20px rgba(211,47,47,0.3); cursor: pointer; margin-top: 30px; }
     </style>
 </head>
 <body>
-
+<nav class="top-nav">
+    <a href="index.html" class="nav-logo">🦋 2u 日本代購</a>
+</nav>
 <div class="container">
     <div class="form-section">
         <h2 style="margin-top:0">📋 訂購人資訊</h2>
@@ -53,7 +33,7 @@
 
 <script>
     // ⚠️ 請務必換成你部署後的 GAS 網址
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzZk4sQWZUTJIYC5AqgcyUy32Bsfgv_k8dQkHH2_rT8qWt3jh6Fz61Eg07Kau62VXi8/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwo3QdUYTQPMs9FNy0dtbMWAPlvPYGlQKNf5Fynl_4i_H4v82QVQ6J34PYPOLgW49zA/exec"; 
 
     // 1. 頁面載入時自動執行：向 GAS 要商品資料
     window.onload = async function() {
