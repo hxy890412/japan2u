@@ -6,6 +6,46 @@
     <title>訂單查詢 | 2U日本代購 🦋</title>
     <link rel="stylesheet" href="style.css">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        /* 收據專屬樣式 */
+        .receipt-container {
+            background: #fff;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+        }
+        /* 收據齒輪裝飾 */
+        .receipt-container::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: linear-gradient(-45deg, transparent 5px, #fff 5px), linear-gradient(45deg, transparent 5px, #fff 5px);
+            background-size: 10px 10px;
+        }
+        .section-title {
+            font-weight: bold;
+            padding-left: 10px;
+            border-left: 5px solid var(--primary-red);
+            margin: 25px 0 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .paid-title { border-left-color: #4caf50; }
+        .receipt-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+            font-size: 14px;
+        }
+        .receipt-id { font-size: 12px; color: #888; margin-bottom: 5px; }
+    </style>
 </head>
 <body>
     <nav class="top-nav">
@@ -15,36 +55,35 @@
     <div class="page-container">
         <div class="search-section" style="background:white; padding:20px; border-radius:15px; margin-bottom:20px; text-align:center; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
             <h2 style="margin-top:0; color:#333;">訂單進度查詢</h2>
-            <div id="user-welcome" style="margin-bottom:15px; font-size:14px; color:#666;"></div>
             <input type="text" id="searchName" placeholder="輸入社群名稱搜尋" style="width:70%; padding:12px; border:1px solid #ddd; border-radius:8px;">
-            <button onclick="doSearch()" class="btn-search" style="padding:12px 20px; background:var(--primary-red); color:white; border:none; border-radius:8px; cursor:pointer; margin-left:5px;">搜尋</button>
+            <button onclick="doSearch()" class="btn-search" style="padding:12px 20px; background:var(--primary-red); color:white; border:none; border-radius:8px; cursor:pointer;">搜尋</button>
         </div>
 
         <div class="summary-grid" id="summary-area" style="display:none;">
-            <div class="sum-box">
-                <span class="sum-label">訂單總額</span>
-                <span class="sum-val" id="sum-total">$0</span>
-            </div>
-            <div class="sum-box">
-                <span class="sum-label">已匯款</span>
-                <span class="sum-val" id="sum-paid" style="color:#4caf50;">$0</span>
-            </div>
-            <div class="sum-box">
-                <span class="sum-label">未匯款</span>
-                <span class="sum-val" id="sum-unpaid" style="color:var(--primary-red);">$0</span>
-            </div>
+            <div class="sum-box"><span class="sum-label">訂單總額</span><span class="sum-val" id="sum-total">$0</span></div>
+            <div class="sum-box"><span class="sum-label">已匯款</span><span class="sum-val" id="sum-paid" style="color:#4caf50;">$0</span></div>
+            <div class="sum-box"><span class="sum-label">未匯款</span><span class="sum-val" id="sum-unpaid" style="color:var(--primary-red);">$0</span></div>
         </div>
 
         <div id="loading" style="display:none; text-align:center; padding:20px;">讀取中...</div>
-        <div id="result-list">
+        
+        <div id="results-content">
+            <div id="unpaid-zone" style="display:none;">
+                <div class="section-title">⏳ 待匯款清單 <small id="unpaid-count" style="font-size: 12px; color: #666;"></small></div>
+                <div id="unpaid-list"></div>
             </div>
+
+            <div id="paid-zone" style="display:none;">
+                <div class="section-title paid-title">✅ 已完成清單 <small id="paid-count" style="font-size: 12px; color: #666;"></small></div>
+                <div id="paid-list"></div>
+            </div>
+        </div>
     </div>
 
     <script>
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQPqpF3suCYPcNNh_Z5vTzqTvWRJCTfCJj-WP1bJs9r2dogVwZ33AcFW_IhzTszes_/exec'; // ⬅️ 記得填入你的 GAS 網址
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQPqpF3suCYPcNNh_Z5vTzqTvWRJCTfCJj-WP1bJs9r2dogVwZ33AcFW_IhzTszes_/exec'; 
 
         window.onload = function() {
-            // 1. 自動從 localStorage 讀取上次搜尋的名稱
             const savedName = localStorage.getItem('socialName');
             if (savedName) {
                 document.getElementById('searchName').value = savedName;
@@ -55,98 +94,89 @@
         async function doSearch() {
             const name = document.getElementById('searchName').value.trim();
             if (!name) return alert("請輸入名稱");
-
-            // 記住名稱，下次打開自動填寫
             localStorage.setItem('socialName', name);
 
-            const list = document.getElementById('result-list');
             const loading = document.getElementById('loading');
             const summary = document.getElementById('summary-area');
+            const unpaidZone = document.getElementById('unpaid-zone');
+            const paidZone = document.getElementById('paid-zone');
 
-            list.innerHTML = "";
             loading.style.display = "block";
             summary.style.display = "none";
+            unpaidZone.style.display = "none";
+            paidZone.style.display = "none";
 
             try {
                 const response = await fetch(`${GAS_URL}?searchKey=${encodeURIComponent(name)}`);
                 const orders = await response.json();
-                renderResults(orders);
+                renderReceipts(orders);
             } catch (e) {
-                list.innerHTML = "<p style='text-align:center; color:red;'>查詢失敗，請稍後再試。</p>";
+                alert("查詢失敗，請稍後再試");
             } finally {
                 loading.style.display = "none";
             }
         }
 
-        function renderResults(orders) {
-            const list = document.getElementById('result-list');
-            const summary = document.getElementById('summary-area');
-            
+        function renderReceipts(orders) {
             if (!orders || orders.length === 0) {
-                list.innerHTML = "<p style='text-align:center; padding:40px; color:#888;'>查無訂單資料 🦋</p>";
+                document.getElementById('results-content').innerHTML = "<p style='text-align:center; padding:40px; color:#888;'>查無訂單資料 🦋</p>";
                 return;
             }
 
-            summary.style.display = "grid";
+            document.getElementById('summary-area').style.display = "grid";
+            const unpaidList = document.getElementById('unpaid-list');
+            const paidList = document.getElementById('paid-list');
+            unpaidList.innerHTML = "";
+            paidList.innerHTML = "";
 
-            let totalAll = 0;
-            let totalPaid = 0;
-            let totalUnpaid = 0;
+            let totals = { all: 0, paid: 0, unpaid: 0, countP: 0, countU: 0 };
 
-            // 將訂單依據編號倒序排列（最新在前）
-            orders.sort((a, b) => b.id.localeCompare(a.id)).forEach(order => {
+            orders.forEach(order => {
                 const isPaid = order.isPaid;
-                const sectionClass = isPaid ? 'paid-section' : 'unpaid-section';
+                totals.all += order.total;
                 
-                // 計算統計數據
-                totalAll += order.total;
-                if (isPaid) totalPaid += order.total;
-                else totalUnpaid += order.total;
-
-                // 生成商品表格內容
                 let itemsHtml = order.items.map(item => `
-                    <tr>
-                        <td>${item.name}</td>
-                        <td style="text-align:center;">${item.qty}</td>
-                        <td style="text-align:right;">$${item.sub}</td>
-                    </tr>
+                    <div class="receipt-item">
+                        <span>${item.name} x ${item.qty}</span>
+                        <span style="font-weight:bold;">$${item.sub}</span>
+                    </div>
                 `).join('');
 
-                list.innerHTML += `
-                    <div class="order-group-card ${sectionClass}">
-                        <div class="order-header" style="padding:15px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid rgba(0,0,0,0.05);">
-                            <div>
-                                <strong style="font-size:14px;">編號：${order.id}</strong>
-                                <div style="font-size:12px; color:#888;">備註：${order.note || '無'}</div>
-                            </div>
-                            <span style="font-size:13px; font-weight:bold; color:${isPaid ? '#2e7d32':'#d32f2f'};">
-                                ${isPaid ? '✅ 已完成對帳' : '⏳ 尚未匯款'}
-                            </span>
-                        </div>
-                        <table class="order-table">
-                            <thead>
-                                <tr style="background:rgba(0,0,0,0.02);">
-                                    <th style="text-align:left;">商品名稱</th>
-                                    <th>數量</th>
-                                    <th style="text-align:right;">小計</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${itemsHtml}
-                            </tbody>
-                        </table>
-                        <div style="padding:12px 15px; text-align:right; font-weight:bold; background:rgba(255,255,255,0.5);">
-                            <span style="font-size:12px; color:#666; margin-right:10px;">訂單總額</span>
-                            <span style="font-size:18px; color:var(--primary-red);">$${order.total}</span>
+                const cardHtml = `
+                    <div class="receipt-container">
+                        <div class="receipt-id"># ${order.id} | 備註: ${order.note || '無'}</div>
+                        ${itemsHtml}
+                        <div style="text-align:right; margin-top:15px; font-weight:bold;">
+                            <span style="font-size:12px; color:#999; margin-right:5px;">TOTAL</span>
+                            <span style="font-size:20px; color:${isPaid?'#4caf50':'var(--primary-red)'};">$${order.total}</span>
                         </div>
                     </div>
                 `;
+
+                if (isPaid) {
+                    paidList.innerHTML += cardHtml;
+                    totals.paid += order.total;
+                    totals.countP++;
+                } else {
+                    unpaidList.innerHTML += cardHtml;
+                    totals.unpaid += order.total;
+                    totals.countU++;
+                }
             });
 
-            // 更新上方統計區塊文字
-            document.getElementById('sum-total').innerText = `$${totalAll}`;
-            document.getElementById('sum-paid').innerText = `$${totalPaid}`;
-            document.getElementById('sum-unpaid').innerText = `$${totalUnpaid}`;
+            // 更新統計與顯示區塊
+            document.getElementById('sum-total').innerText = `$${totals.all}`;
+            document.getElementById('sum-paid').innerText = `$${totals.paid}`;
+            document.getElementById('sum-unpaid').innerText = `$${totals.unpaid}`;
+
+            if (totals.countU > 0) {
+                document.getElementById('unpaid-zone').style.display = "block";
+                document.getElementById('unpaid-count').innerText = `共 ${totals.countU} 筆`;
+            }
+            if (totals.countP > 0) {
+                document.getElementById('paid-zone').style.display = "block";
+                document.getElementById('paid-count').innerText = `共 ${totals.countP} 筆`;
+            }
         }
     </script>
 </body>
