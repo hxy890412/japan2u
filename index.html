@@ -1,120 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2U日本代購服務</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <style>
-        body {
-            font-family: 'Noto Sans TC', sans-serif;
-            margin: 0;
-            padding: 0;
-            background: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            color: var(--dark-blue);
-        }
-
-        .container {
-            text-align: center;
-            background: white;
-            padding: 50px 30px;
-            border-radius: 24px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.08);
-            width: 90%;
-            max-width: 400px;
-        }
-
-        .logo {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            margin-bottom: 5px;
-            color: var(--dark-blue);
-        }
-
-        .sub-title {
-            font-size: 14px;
-            color: #888;
-            margin-bottom: 40px;
-            font-weight: 300;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .btn {
-            text-decoration: none;
-            padding: 18px;
-            border-radius: 12px;
-            font-size: 17px;
-            font-weight: 500;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        /* 我要下單按鈕 */
-        .btn-order {
-            background-color: var(--primary-red);
-            color: white;
-            box-shadow: 0 4px 15px rgba(211,47,47,0.2);
-        }
-
-        .btn-order:hover {
-            transform: translateY(-3px);
-            background-color: #b71c1c;
-            box-shadow: 0 6px 20px rgba(211,47,47,0.3);
-        }
-
-        /* 查詢訂單按鈕 */
-        .btn-check {
-            background-color: white;
-            color: var(--dark-blue);
-            border: 1px solid #ddd;
-        }
-
-        .btn-check:hover {
-            transform: translateY(-3px);
-            background-color: #f1f1f1;
-            border-color: #bbb;
-        }
-
-        .footer {
-            margin-top: 40px;
-            font-size: 12px;
-            color: #bbb;
-        }
-    </style>
+    <title>2U日本代購 🦋</title>
 </head>
-<body>
-
-<div class="container">
-    <div class="logo">2U日本代購 🦋</div>
-    <div class="sub-title">日本代購專用系統</div>
-
-    <div class="btn-group">
-        <a href="order.html" class="btn btn-order">
-            <span>🛍️</span> 我要下單
-        </a>
-        <a href="check.html" class="btn btn-check">
-            <span>🔍</span> 查詢訂單進度
-        </a>
+<body class="home-body">
+    <nav class="top-nav"><a href="index.html" class="nav-logo">🦋 2U 日本代購</a></nav>
+    <div class="home-container">
+        <h1>歡迎來到 2U 🦋</h1>
+        <p>請先完成 LINE 授權以進入系統</p>
+        <button onclick="login()" class="btn-order" style="width:100%; border:none; padding:15px; border-radius:12px; cursor:pointer;">🍀 LINE 授權登入</button>
     </div>
-
-    <div class="footer">
-        © 2026 Japan2u Service.
-    </div>
-</div>
-
+    <script>
+        function login() {
+            const clientID = '2009551361'; // ⬅️ 這裡填入
+            const redirect = encodeURIComponent('https://hxy890412.github.io/japan2u/order.html');
+            window.location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientID}&redirect_uri=${redirect}&state=12345&scope=profile%20openid`;
+        }
+    </script>
 </body>
 </html>
