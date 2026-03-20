@@ -1,32 +1,34 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>2U日本代購 🦋</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
-    <body class="home-body">
+<body class="home-body">
     <div class="home-container">
-        <h1 style="font-size: 2rem; margin-bottom: 10px;">2U日本代購 🦋</h1>
-        <p style="color: #666; margin-bottom: 40px;">專屬於您的連線採購小管家</p>
+        <h1 style="font-size: 2.5rem; margin-bottom: 10px;">2U日本代購 🦋</h1>
+        <p style="color: #64748b; margin-bottom: 40px; font-weight: 500;">專屬於您的連線採購小管家</p>
         
-        <button onclick="login()" class="footer-btn btn-line">
-    🍀 LINE 授權登入
-</button>
+        <button onclick="login()" class="footer-btn btn-line" style="position:static; width:100%; margin-bottom: 20px;">
+            🍀 LINE 快速登入 / 註冊
+        </button>
         
-        <div style="margin-top: 20px;">
-            <a href="check.html" style="color: #888; text-decoration: none; font-size: 14px;">或直接查詢訂單記錄 ></a>
+        <div>
+            <a href="check.html" style="color: #94a3b8; text-decoration: none; font-size: 14px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">
+                或是直接查詢訂單記錄 >
+            </a>
         </div>
     </div>
+
     <script>
         function login() {
             const clientID = '2009551361'; 
             const redirect = encodeURIComponent('https://hxy890412.github.io/japan2u/order.html');
+            // 請求 profile (名字/頭像) 與 openid (唯一識別碼)
             window.location.href = `https://access.line.me/oauth2/v2.1/authorize?response_type=code&client_id=${clientID}&redirect_uri=${redirect}&state=12345&scope=profile%20openid`;
         }
     </script>
-
 </body>
 </html>

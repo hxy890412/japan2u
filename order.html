@@ -15,7 +15,7 @@
         <div class="category-bar" id="category-bar"></div>
 
         <div id="product-display" class="product-grid" style="margin-top:20px;">
-            <p style="text-align:center; grid-column: 1/-1; padding: 50px; color: #999;">商品載入中...🦋</p>
+            <p style="text-align:center; grid-column: 1/-1; padding: 50px; color: #94a3b8;">商品載入中...🦋</p>
         </div>
     </div>
 
@@ -23,92 +23,79 @@
         🛒 查看購物車 (<span id="cart-count">0</span>)
     </button>
 
-    <div id="cart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(5px);">
-        <div style="background:white; margin:15% auto; padding:25px; width:85%; max-width:400px; border-radius:24px; position:relative; box-shadow: var(--hover-shadow);">
+    <div id="cart-modal" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
             <h3 style="margin-top:0;">確認訂單內容</h3>
-            <div id="cart-items-list" style="max-height:200px; overflow-y:auto; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
+            <div id="cart-items-list" class="cart-items-scroll"></div>
             
-            <div style="font-size: 14px; color: #666; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 8px;">
-                LINE 帳號：<span id="display-line-name" style="color:var(--primary-red); font-weight:bold;">正在讀取資料...</span>
+            <div class="user-status-tag">
+                LINE 帳號：<span id="display-line-name">驗證身份中...</span>
             </div>
             
-            <input type="text" id="socialName" placeholder="請填寫社群名稱 (必填)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; box-sizing: border-box;">
-            <input type="text" id="orderNote" placeholder="備註需求 (選填)" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:10px; box-sizing: border-box;">
+            <input type="text" id="socialName" class="modal-input" placeholder="請填寫社群名稱 (必填)">
+            <input type="text" id="orderNote" class="modal-input" placeholder="備註需求 (選填)">
             
-            <div style="display:flex; gap:10px;">
-                <button onclick="closeModal()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#f0f0f0; cursor:pointer;">返回</button>
-                <button id="submit-btn" onclick="submitOrder()" style="flex:2; padding:12px; background:var(--dark-blue); color:white; border:none; border-radius:10px; font-weight:bold; cursor:pointer;">確認下單</button>
+            <div style="display:flex; gap:12px;">
+                <button onclick="closeModal()" class="btn-secondary">返回</button>
+                <button id="submit-btn" onclick="submitOrder()" class="btn-primary">確認下單</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ⚠️ 請確保此網址與您最新部署的 GAS 網址一致
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxYjEGvCVZRHipsEfSxqx60f1kkXeyF6APG-k5-QWampsOoH06GcO71ylcb6wCYE0al/exec'; 
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbyFLH4ltMsdr_TzrNO61ecoCisIClWaLeJhtjzznUi6eSOh9_r-4i85QpOhSt0SxJWJ/exec'; 
         
         let allProducts = [];
         let cart = {};
-        let lineUser = { id: 'U_Unknown', name: '未登入用戶' };
+        let lineUser = { id: '', name: '' };
 
         window.onload = async function() {
-            // 1. 處理 LINE 登入回傳的 code
+            // 1. 處理 LINE 登入 Code
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             
             if (code) {
-                console.log("偵測到 Code，進行身份驗證...");
                 await fetchLineProfile(code);
             } else {
-                document.getElementById('display-line-name').innerText = "未經授權 (請從首頁登入)";
+                document.getElementById('display-line-name').innerText = "未登入 (請回首頁)";
+                document.getElementById('display-line-name').style.color = "#ef4444";
             }
 
-            // 2. 載入商品資料
+            // 2. 載入商品與舊資料
             loadProducts();
-            
-            // 3. 自動填入上次使用的社群名稱
             const savedName = localStorage.getItem('socialName');
             if (savedName) document.getElementById('socialName').value = savedName;
         };
 
-        // 向 GAS 請求 LINE 用戶資訊
         async function fetchLineProfile(code) {
             const nameEl = document.getElementById('display-line-name');
             try {
                 const res = await fetch(`${GAS_URL}?action=getLineUser&code=${code}`);
                 const data = await res.json();
-                
-                if (data.displayName) {
-                    lineUser.name = data.displayName;
-                    lineUser.id = data.userId;
+                if (data.userId) {
+                    lineUser = { id: data.userId, name: data.displayName };
                     nameEl.innerText = data.displayName;
-                    nameEl.style.color = "#4caf50"; // 成功則變綠色
-                    console.log("LINE 驗證成功:", data.displayName);
+                    nameEl.className = "status-success";
                 } else {
-                    nameEl.innerText = "驗證失敗，請重新登入";
-                    console.error("GAS 錯誤:", data.error);
+                    nameEl.innerText = "驗證失效，請重新登入";
                 }
             } catch (e) {
-                nameEl.innerText = "無法連線至伺服器";
-                console.error("Fetch 失敗:", e);
+                nameEl.innerText = "連線 GAS 失敗";
             }
         }
 
-        // 載入商品
         async function loadProducts() {
             try {
                 const res = await fetch(`${GAS_URL}?action=getProducts`);
                 allProducts = await res.json();
                 renderCategories();
                 renderProducts('全部');
-            } catch (e) {
-                console.error("載入商品失敗", e);
-            }
+            } catch (e) { console.error("商品載入失敗"); }
         }
 
         function renderCategories() {
             const categories = ['全部', ...new Set(allProducts.map(p => p.category))];
-            const bar = document.getElementById('category-bar');
-            bar.innerHTML = categories.map(cat => 
+            document.getElementById('category-bar').innerHTML = categories.map(cat => 
                 `<button class="cat-btn ${cat==='全部'?'active':''}" onclick="filterCategory('${cat}')">${cat}</button>`
             ).join('');
         }
@@ -125,7 +112,6 @@
             
             container.innerHTML = filtered.map(p => `
                 <div class="product-card">
-                    ${p.tag ? `<div class="badge" style="position:absolute; background:var(--primary-red); color:white; padding:2px 8px; font-size:10px; border-radius:0 0 10px 0; z-index:1;">${p.tag}</div>` : ''}
                     <img src="${p.img}" class="product-img">
                     <div class="product-info">
                         <div class="product-name">${p.name}</div>
@@ -144,23 +130,17 @@
             if (!cart[name]) cart[name] = { qty: 0, price: price };
             cart[name].qty = Math.max(0, cart[name].qty + change);
             document.getElementById(`qty-${name}`).innerText = cart[name].qty;
-            
-            const totalItems = Object.values(cart).reduce((sum, i) => sum + i.qty, 0);
-            document.getElementById('cart-count').innerText = totalItems;
+            document.getElementById('cart-count').innerText = Object.values(cart).reduce((s, i) => s + i.qty, 0);
         }
 
         function openModal() {
-            const list = document.getElementById('cart-items-list');
             let html = "";
             for (const [name, info] of Object.entries(cart)) {
                 if (info.qty > 0) {
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
-                                <span>${name} x ${info.qty}</span>
-                                <span>$${info.qty * info.price}</span>
-                             </div>`;
+                    html += `<div class="receipt-item"><span>${name} x ${info.qty}</span><span>$${info.qty * info.price}</span></div>`;
                 }
             }
-            list.innerHTML = html || "<p style='text-align:center; color:#999;'>購物車是空的 🦋</p>";
+            document.getElementById('cart-items-list').innerHTML = html || "<p style='text-align:center; color:#94a3b8;'>購物車空空的 🦋</p>";
             document.getElementById('cart-modal').style.display = 'block';
         }
 
@@ -168,35 +148,34 @@
 
         async function submitOrder() {
             const socialName = document.getElementById('socialName').value.trim();
-            if (!socialName) return alert("請填寫社群名稱！");
+            if (!socialName) return alert("請填寫社群名稱");
+            
+            const items = Object.entries(cart)
+                .filter(([_, i]) => i.qty > 0)
+                .map(([n, i]) => ({ product: n, qty: i.qty, price: i.price }));
 
-            const finalItems = Object.entries(cart)
-                .filter(([_, info]) => info.qty > 0)
-                .map(([name, info]) => ({ product: name, qty: info.qty, price: info.price }));
-
-            if (finalItems.length === 0) return alert("購物車沒有商品！");
+            if (items.length === 0) return alert("請先選擇商品");
 
             const btn = document.getElementById('submit-btn');
-            btn.disabled = true;
-            btn.innerText = "下單中...";
-
-            const payload = {
-                lineName: lineUser.name,
-                socialMedia: socialName,
-                note: document.getElementById('orderNote').value,
-                items: finalItems,
-                userId: lineUser.id
-            };
+            btn.disabled = true; btn.innerText = "提交中...";
 
             try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                await fetch(GAS_URL, { 
+                    method: 'POST', 
+                    body: JSON.stringify({ 
+                        lineName: lineUser.name, 
+                        socialMedia: socialName, 
+                        note: document.getElementById('orderNote').value, 
+                        items: items, 
+                        userId: lineUser.id 
+                    }) 
+                });
                 localStorage.setItem('socialName', socialName);
                 alert("下單成功！🦋");
                 window.location.href = "check.html";
             } catch (e) {
-                alert("連線失敗，請檢查網路或重新下單");
-                btn.disabled = false;
-                btn.innerText = "確認下單";
+                alert("下單失敗，請稍後再試");
+                btn.disabled = false; btn.innerText = "確認下單";
             }
         }
     </script>
