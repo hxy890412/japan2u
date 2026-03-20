@@ -13,11 +13,10 @@
 
     <div class="page-container">
         <div class="category-bar" id="category-bar">
-            <button class="cat-btn active" onclick="filterCategory('全部')">全部</button>
-        </div>
+            </div>
 
-        <div id="product-display" class="product-grid" style="margin-top:20px;">
-            <p style="text-align:center; grid-column: 1/-1;">商品載入中...</p>
+        <div id="product-display" class="product-grid">
+            <p style="text-align:center; grid-column: 1/-1; padding: 50px; color: #999;">商品載入中...🦋</p>
         </div>
     </div>
 
@@ -25,57 +24,49 @@
         🛒 查看購物車 (<span id="cart-count">0</span>)
     </button>
 
-    <div id="cart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(5px);">
-        <div style="background:white; margin:15% auto; padding:25px; width:85%; max-width:400px; border-radius:24px; position:relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2);">
-            <h3 style="margin-top:0; color:var(--dark-blue);">確認訂單內容</h3>
-            <div id="cart-items-list" style="max-height:250px; overflow-y:auto; margin-bottom:20px; font-size:14px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
+    <div id="cart-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:2000; backdrop-filter: blur(8px);">
+        <div style="background:white; margin:10vh auto; padding:30px; width:85%; max-width:400px; border-radius:24px; position:relative;">
+            <h3 style="margin-top:0;">確認訂單</h3>
+            <div id="cart-items-list" style="max-height:200px; overflow-y:auto; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px;"></div>
             
-            <div style="padding-top:5px;">
-                <p style="font-size:13px; color:#666; margin-bottom:10px;">
-                    LINE 帳號：<span id="display-line-name" style="color:var(--primary-red); font-weight:bold;">驗證中...</span>
-                </p>
-                <input type="text" id="socialName" placeholder="請填寫社群名稱 (必填)" style="width:100%; padding:12px; margin-bottom:12px; border:1px solid #ddd; border-radius:12px; box-sizing: border-box;">
-                <input type="text" id="orderNote" placeholder="備註 (選填)" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:12px; box-sizing: border-box;">
-                
-                <div style="display:flex; gap:10px;">
-                    <button onclick="closeModal()" style="flex:1; padding:12px; border:none; border-radius:12px; background:#f0f0f0; font-weight:bold;">返回</button>
-                    <button id="submit-btn" onclick="submitOrder()" style="flex:2; padding:12px; background:var(--primary-red); color:white; border:none; border-radius:12px; font-weight:bold;">確認下單</button>
-                </div>
+            <div style="font-size: 14px; color: #666; margin-bottom: 15px;">
+                LINE 帳號：<span id="display-line-name" style="color:var(--primary-red); font-weight:bold;">驗證中...</span>
+            </div>
+            
+            <input type="text" id="socialName" placeholder="請填寫社群名稱 (必填)" style="width:100%; padding:12px; margin-bottom:10px; border:1px solid #ddd; border-radius:10px; box-sizing: border-box;">
+            <input type="text" id="orderNote" placeholder="備註 (選填)" style="width:100%; padding:12px; margin-bottom:20px; border:1px solid #ddd; border-radius:10px; box-sizing: border-box;">
+            
+            <div style="display:flex; gap:10px;">
+                <button onclick="closeModal()" style="flex:1; padding:12px; border:none; border-radius:10px; background:#f0f0f0;">返回</button>
+                <button id="submit-btn" onclick="submitOrder()" style="flex:2; padding:12px; background:var(--dark-blue); color:white; border:none; border-radius:10px; font-weight:bold;">確認下單</button>
             </div>
         </div>
     </div>
 
     <script>
-        // 🛠️ 基本設定
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxQPqpF3suCYPcNNh_Z5vTzqTvWRJCTfCJj-WP1bJs9r2dogVwZ33AcFW_IhzTszes_/exec'; 
-        const LINE_CLIENT_ID = '2009551361'; // 您的 Channel ID
-        const LINE_CLIENT_SECRET = 'ed5d7a14aa7908a07effaa759b6d012b'; // 請填入您的 Secret
-
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbxYjEGvCVZRHipsEfSxqx60f1kkXeyF6APG-k5-QWampsOoH06GcO71ylcb6wCYE0al/exec'; 
         let allProducts = [];
         let cart = {};
-        let lineUser = { id: 'U12345678', name: 'LINE用戶' }; // 預設值
+        let lineUser = { id: '', name: 'LINE用戶' };
 
         window.onload = async function() {
-            // 1. 處理 LINE 授權回傳的 Code 並換取資料
+            // 1. 處理 LINE 登入 code
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             if (code) {
                 await fetchLineProfile(code);
             }
 
-            // 2. 從 GAS 載入商品
+            // 2. 載入商品
             loadProducts();
             
-            // 3. 自動填入上次用過的社群名稱
+            // 3. 自動填入社群名稱
             const savedName = localStorage.getItem('socialName');
             if (savedName) document.getElementById('socialName').value = savedName;
         };
 
-        // 核心功能：拿 Code 去換真實的名字與 ID
         async function fetchLineProfile(code) {
             try {
-                // 注意：這部分的 Token 交換通常建議放在 GAS 執行以保安全
-                // 這裡示範邏輯，若遇到 CORS 問題，請改由 GAS 轉發
                 const res = await fetch(`${GAS_URL}?action=getLineUser&code=${code}`);
                 const data = await res.json();
                 if (data.displayName) {
@@ -84,8 +75,7 @@
                     document.getElementById('display-line-name').innerText = data.displayName;
                 }
             } catch (e) {
-                console.error("無法取得 LINE 資訊", e);
-                document.getElementById('display-line-name').innerText = "授權失效，請重新登入";
+                document.getElementById('display-line-name').innerText = "登入超時，請重新登入";
             }
         }
 
@@ -96,7 +86,7 @@
                 renderCategories();
                 renderProducts('全部');
             } catch (e) {
-                console.error("載入失敗", e);
+                console.error("載入商品失敗");
             }
         }
 
@@ -149,13 +139,13 @@
             let html = "";
             for (const [name, info] of Object.entries(cart)) {
                 if (info.qty > 0) {
-                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                    html += `<div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:14px;">
                                 <span>${name} x ${info.qty}</span>
                                 <span>$${info.qty * info.price}</span>
                              </div>`;
                 }
             }
-            list.innerHTML = html || "<p style='text-align:center; color:#999;'>您的購物車還空空的 🦋</p>";
+            list.innerHTML = html || "<p style='text-align:center; color:#999;'>購物車是空的 🦋</p>";
             document.getElementById('cart-modal').style.display = 'block';
         }
 
@@ -173,14 +163,14 @@
 
             const btn = document.getElementById('submit-btn');
             btn.disabled = true;
-            btn.innerText = "下單中...";
+            btn.innerText = "提交中...";
 
             const payload = {
-                lineName: lineUser.name, // ⬅️ 這裡會記錄真實 LINE 名字
+                lineName: lineUser.name,
                 socialMedia: socialName,
                 note: document.getElementById('orderNote').value,
                 items: finalItems,
-                userId: lineUser.id // ⬅️ 這裡記錄 User ID
+                userId: lineUser.id
             };
 
             try {
@@ -189,7 +179,7 @@
                 alert("下單成功！🦋");
                 window.location.href = "check.html";
             } catch (e) {
-                alert("連線超時，請檢查網路或稍後再試");
+                alert("下單失敗，請重新嘗試");
                 btn.disabled = false;
                 btn.innerText = "確認下單";
             }
